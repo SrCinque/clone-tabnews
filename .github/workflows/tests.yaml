@@ -1,4 +1,4 @@
-name: Autometed Tests
+name: Autometed Tests 1
 
 on: pull_request
 
