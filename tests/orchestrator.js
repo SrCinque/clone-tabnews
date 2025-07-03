@@ -17,6 +17,8 @@ async function waitForAllServices() {
   }
 }
 
-export default {
+const orch = {
   waitForAllServices,
 };
+
+export default orch;
