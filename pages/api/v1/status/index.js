@@ -32,7 +32,15 @@ async function status(request, response) {
         },
       },
     });
-  } catch (error) {}
+  } catch (error) {
+    const publicErrorObject = new InternalServerError({
+      cause: error,
+    });
+
+    console.log("\n Erro dentro do catch do controller do controller:");
+
+    response.status(500).json(publicErrorObject);
+  }
 }
 
 export default status;
