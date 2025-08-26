@@ -17,3 +17,41 @@ export class InternalServerError extends Error {
     };
   }
 }
+
+export class MethodNotAllowedError extends Error {
+  constructor() {
+    super("Only GET method is allowed on this endpoint");
+    this.name = "MethodNotAllowedError";
+    this.action = "Use GET method on this endpoint.";
+    this.statusCode = 405;
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: this.statusCode,
+    };
+  }
+}
+
+export class ServiceError extends Error {
+  constructor({ cause, message }) {
+    super(message || "Serviço indisponível no momento.", {
+      cause,
+    });
+    this.name = "ServiceError";
+    this.action = "Verifique se o serviço está disponível.";
+    this.statusCode = 503;
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: this.statusCode,
+    };
+  }
+}
