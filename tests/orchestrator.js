@@ -1,4 +1,6 @@
 import retry from "async-retry";
+import database from "infra/database";
+import migrator from "models/migrator";
 async function waitForAllServices() {
   await waitForWebServer();
 
@@ -16,9 +18,18 @@ async function waitForAllServices() {
     }
   }
 }
+async function claerDatabase() {
+  await database.query("drop schema public cascade; create schema public;");
+}
+
+async function runPeddingMigrations() {
+  await migrator.runPendingMigrations();
+}
 
 const orch = {
   waitForAllServices,
+  claerDatabase,
+  runPeddingMigrations,
 };
 
 export default orch;
