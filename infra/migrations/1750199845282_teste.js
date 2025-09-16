@@ -1,1 +1,1 @@
-exports.up = (pgm) => {};
+exports.up = () => {};
