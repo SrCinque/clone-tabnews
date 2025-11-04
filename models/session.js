@@ -1,5 +1,6 @@
 import cripto from "crypto";
 import database from "infra/database";
+import { UnauthorizedError } from "infra/errors";
 
 const EXPIRANTION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 dias
 
@@ -24,6 +25,13 @@ async function findOneValidByToken(sessionToken) {
     `,
       values: [sessionToken],
     });
+
+    if (result.rowCount === 0) {
+      throw new UnauthorizedError({
+        message: "Invalid session",
+        action: "Verifique se o usuário está logado e tente novamente.",
+      });
+    }
 
     return result.rows[0];
   }
@@ -52,9 +60,36 @@ async function create(userId) {
   }
 }
 
+async function renew(sessionId) {
+  const expiresAt = new Date(Date.now() + EXPIRANTION_IN_MILLISECONDS);
+
+  const renewSessionObject = runUpdateQuery(sessionId, expiresAt);
+  return renewSessionObject;
+
+  async function runUpdateQuery(sessionId, expiresAt) {
+    const result = await database.query({
+      text: `
+        UPDATE
+          sessions
+        SET
+          expires_at = $2,
+          updated_at = NOW()
+        WHERE
+          id = $1
+        RETURNING
+          *
+      `,
+      values: [sessionId, expiresAt],
+    });
+
+    return result.rows[0];
+  }
+}
+
 const session = {
   create,
   findOneValidByToken,
+  renew,
   EXPIRANTION_IN_MILLISECONDS,
 };
 
