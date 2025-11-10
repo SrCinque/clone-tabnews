@@ -4,8 +4,12 @@ import database from "infra/database";
 import migrator from "models/migrator";
 import user from "models/user.js";
 import session from "models/session.js";
+
+const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
+
 async function waitForAllServices() {
   await waitForWebServer();
+  await waitForEmailServer();
 
   async function waitForWebServer() {
     return retry(fecthStatusPage, {
@@ -15,6 +19,20 @@ async function waitForAllServices() {
 
     async function fecthStatusPage() {
       const response = await fetch("http://localhost:3000/api/v1/status");
+      if (response.status != 200) {
+        throw Error();
+      }
+    }
+  }
+
+  async function waitForEmailServer() {
+    return retry(fecthEmailPage, {
+      retries: 100,
+      maxTimeout: 1000,
+    });
+
+    async function fecthEmailPage() {
+      const response = await fetch(emailHttpUrl);
       if (response.status != 200) {
         throw Error();
       }
@@ -41,12 +59,36 @@ async function createSession(userId) {
   return await session.create(userId);
 }
 
+async function deleteAllEmail() {
+  await fetch(
+    `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}/messages`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+async function getLastEmail() {
+  const emailListResponse = await fetch(`${emailHttpUrl}/messages`);
+  const emailListBody = await emailListResponse.json();
+  const lastEmailItem = emailListBody.pop();
+
+  const emailTextReponse = await fetch(
+    `${emailHttpUrl}/messages/${lastEmailItem.id}.plain`,
+  );
+  const emailTextBody = await emailTextReponse.text();
+  lastEmailItem.text = emailTextBody;
+  return lastEmailItem;
+}
+
 const orch = {
   waitForAllServices,
   claerDatabase,
   runPeddingMigrations,
   createUser,
   createSession,
+  deleteAllEmail,
+  getLastEmail,
 };
 
 export default orch;
