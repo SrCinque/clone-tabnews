@@ -162,7 +162,7 @@ describe("DELETE to api/v1/user", () => {
         id: createdUser.id,
         username: "UserAlmostExperidSesion",
         email: createdUser.email,
-        features: [],
+        features: ["read:activation_token"],
         password: createdUser.password,
         created_at: createdUser.created_at.toISOString(),
         updated_at: createdUser.updated_at.toISOString(),
