@@ -27,12 +27,11 @@ async function create(userId) {
   }
 }
 
-async function finOneByUserId(userId) {
-  const tokenFound = await selectQuery(userId);
-
+async function finOneById(tokenId) {
+  const tokenFound = await selectQuery(tokenId);
   return tokenFound;
 
-  async function selectQuery(userId) {
+  async function selectQuery(tokenId) {
     const result = await database.query({
       text: `
       SELECT
@@ -40,11 +39,15 @@ async function finOneByUserId(userId) {
       FROM
         user_activantion_tokens
       WHERE
-        user_id = $1
+        id = $1
+      AND
+        used_at IS NULL
+      AND
+        expires_at > NOW()
       LIMIT
         1
     `,
-      values: [userId],
+      values: [tokenId],
     });
 
     if (result.rowCount === 0) {
@@ -76,7 +79,7 @@ equipe FinTab.
 const activantion = {
   sendEmailToUser,
   create,
-  finOneByUserId,
+  finOneById,
 };
 
 export default activantion;

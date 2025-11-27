@@ -85,6 +85,13 @@ async function getLastEmail() {
   return lastEmailItem;
 }
 
+async function extractToken(text) {
+  const tokenMatch = text.match(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/gi,
+  );
+  return tokenMatch ? tokenMatch[0] : null;
+}
+
 const orch = {
   waitForAllServices,
   claerDatabase,
@@ -93,6 +100,7 @@ const orch = {
   createSession,
   deleteAllEmail,
   getLastEmail,
+  extractToken,
 };
 
 export default orch;

@@ -40,15 +40,16 @@ describe("Use case: Registration Flow(all seccessful)", () => {
 
   test("Receive activation email", async () => {
     const lastEmail = await orchestrator.getLastEmail();
-    const activantionToken = await activantion.finOneByUserId(
-      createUserResponseBody.id,
-    );
+    const tokenInEmail = await orchestrator.extractToken(lastEmail.text);
+
+    const activantionToken = await activantion.finOneById(tokenInEmail);
 
     expect(lastEmail.sender).toBe("<contato@gmail.com>");
     expect(lastEmail.recipients[0]).toBe("<filipe@gmail.com>");
     expect(lastEmail.subject).toBe("Ative seu cadastro no Fintab!");
     expect(lastEmail.text).toContain("filipecinque");
-    expect(lastEmail.text).toContain(activantionToken.id);
+    expect(activantionToken.user_id).toBe(createUserResponseBody.id);
+    expect(activantionToken.used_at).toBe(null);
   });
 
   test("Activate account", async () => {});
