@@ -211,12 +211,42 @@ async function hashPasswordInObject(inputValues) {
   inputValues.password = hashPassword;
 }
 
+async function setFeatures(userId, features) {
+  const activatedUser = await runUpdateQuery(userId, features);
+  return activatedUser;
+
+  async function runUpdateQuery(userId, features) {
+    const result = await database.query({
+      text: `
+      UPDATE
+        users
+      SET
+        features = $2,
+        updated_at = timezone('utc', NOW())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    `,
+      values: [userId, features],
+    });
+    /*if (result.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Token de ativação não encontrado ou expirado",
+        action: "Solicite um novo token de ativação.",
+      });
+    }*/
+    return result.rows[0];
+  }
+}
+
 const user = {
   create,
   findOneByUsername,
   update,
   findOneByEmail,
   findOneById,
+  setFeatures,
 };
 
 export default user;

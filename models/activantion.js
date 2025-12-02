@@ -2,6 +2,7 @@ import email from "infra/email.js";
 import database from "infra/database.js";
 import webserver from "infra/webserver";
 import { NotFoundError } from "infra/errors";
+import user from "models/user.js";
 const EXPIRES_IN_MILISECONDS = 15 * 60 * 1000; // 15 minutes
 
 async function create(userId) {
@@ -76,10 +77,50 @@ equipe FinTab.
   });
 }
 
+async function activateUserById(userId) {
+  const activatedUser = await user.setFeatures(userId, ["create:session"]);
+  return activatedUser;
+}
+
+async function markTokenAsUsed(tokenId) {
+  const activantionToken = await runUpdateQuery(tokenId);
+  return activantionToken;
+
+  async function runUpdateQuery(tokenId) {
+    const result = await database.query({
+      text: `
+      UPDATE
+        user_activantion_tokens
+      SET
+        used_at = timezone('utc', NOW()),
+        updated_at = timezone('utc', NOW())
+      WHERE
+        id = $1
+      AND
+        used_at IS NULL
+      AND
+        expires_at > NOW()
+      RETURNING
+        *
+    `,
+      values: [tokenId],
+    });
+    if (result.rowCount === 0) {
+      throw new NotFoundError({
+        message: "Token de ativação não encontrado ou expirado",
+        action: "Solicite um novo token de ativação.",
+      });
+    }
+    return result.rows[0];
+  }
+}
+
 const activantion = {
   sendEmailToUser,
   create,
   finOneById,
+  markTokenAsUsed,
+  activateUserById,
 };
 
 export default activantion;
