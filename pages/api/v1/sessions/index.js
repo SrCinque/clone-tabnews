@@ -6,13 +6,15 @@ import session from "models/session.js";
 import authentication from "models/authentication.js";
 
 const router = createRouter();
-router.post(postHandler);
+router.use(controller.injectAnonymousOrUser);
+router.post(controller.canRequest("create:session"), postHandler);
 export default router.handler({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 });
 
 async function postHandler(request, response) {
+  console.log(request.context);
   const userInputValues = request.body;
 
   const authenticatedUser = await authentication.getAuthenticatedUser(

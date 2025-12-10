@@ -81,6 +81,11 @@ describe("Use case: Registration Flow(all seccessful)", () => {
         password: "senha123",
       }),
     });
+    expect(response.status).toBe(200);
+
+    const responseBody = await response.json();
+    console.log(responseBody);
+    expect(responseBody.id).toEqual(createUserResponseBody.id);
   });
 
   test("Get user activation", async () => {});

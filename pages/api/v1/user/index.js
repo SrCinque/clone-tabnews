@@ -4,10 +4,10 @@ import user from "models/user.js";
 import session from "models/session";
 
 const router = createRouter();
+export default router.handler({ onError: controller.onErrorHandler });
+
 router.get(getHandler);
 router.delete(deleteHandler);
-
-export default router.handler({ onError: controller.onErrorHandler });
 
 async function getHandler(request, response) {
   const sessionToken = request.cookies.session_id;
