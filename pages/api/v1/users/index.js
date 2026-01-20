@@ -4,7 +4,8 @@ import user from "models/user.js";
 import activantion from "models/activantion.js";
 
 const router = createRouter();
-router.post(postHandler);
+router.use(controller.injectAnonymousOrUser);
+router.post(controller.canRequest("create:user"), postHandler);
 export default router.handler({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,

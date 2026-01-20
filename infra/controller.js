@@ -8,6 +8,7 @@ import {
 } from "infra/errors.js";
 import * as cookie from "cookie";
 import session from "models/session";
+import authorization from "models/authorization.js";
 
 import user from "models/user.js";
 function onNoMatchHandler(request, response) {
@@ -66,7 +67,7 @@ async function injectAnonymousOrUser(request, response, next) {
 
 async function injectAuthenticatedUser(request) {
   const sessionToken = request.cookies.session_id;
-  const sessionObject = await session.findOneByToken(sessionToken);
+  const sessionObject = await session.findOneValidByToken(sessionToken);
   const userObject = await user.findOneById(sessionObject.user_id);
 
   request.context = {
@@ -77,7 +78,7 @@ async function injectAuthenticatedUser(request) {
 
 function injectAnonymousUser(request) {
   const anonymousUserObject = {
-    features: ["read:actijvantion_token", "create:session", "create:user"],
+    features: ["read:activantion_token", "create:session", "create:user"],
   };
   request.context = {
     ...request.context,
@@ -88,7 +89,7 @@ function injectAnonymousUser(request) {
 function canRequest(feature) {
   return function canRequestMiiddleware(request, response, next) {
     const userTryToRequest = request.context.user;
-    if (userTryToRequest.features.includes(feature)) {
+    if (authorization.can(userTryToRequest, feature)) {
       return next();
     }
 

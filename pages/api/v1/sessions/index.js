@@ -1,9 +1,9 @@
 import { createRouter } from "next-connect";
 import controller from "infra/controller";
 import session from "models/session.js";
-
-("models/password.js");
 import authentication from "models/authentication.js";
+import authorization from "models/authorization.js";
+import { ForbiddenError } from "infra/errors.js";
 
 const router = createRouter();
 router.use(controller.injectAnonymousOrUser);
@@ -14,13 +14,25 @@ export default router.handler({
 });
 
 async function postHandler(request, response) {
-  console.log(request.context);
   const userInputValues = request.body;
 
   const authenticatedUser = await authentication.getAuthenticatedUser(
     userInputValues.email,
     userInputValues.password,
   );
+  console.log(authenticatedUser);
+  const authorized = await authorization.can(
+    authenticatedUser,
+    "create:session",
+  );
+  console.log(authorized);
+
+  if (authorized === false) {
+    throw new ForbiddenError({
+      message: "Você não possui permissão para criar uma sessão.",
+      action: `Verifique se o seu usuário possui a feature `,
+    });
+  }
 
   const newSession = await session.create(authenticatedUser.id);
 
@@ -28,3 +40,4 @@ async function postHandler(request, response) {
 
   return response.status(201).json(newSession);
 }
+6;

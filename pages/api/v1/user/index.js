@@ -6,7 +6,8 @@ import session from "models/session";
 const router = createRouter();
 export default router.handler({ onError: controller.onErrorHandler });
 
-router.get(getHandler);
+router.use(controller.injectAnonymousOrUser);
+router.get(controller.canRequest("read:session"), getHandler);
 router.delete(deleteHandler);
 
 async function getHandler(request, response) {

@@ -4,6 +4,7 @@ import database from "infra/database";
 import migrator from "models/migrator";
 import user from "models/user.js";
 import session from "models/session.js";
+import activantion from "models/activantion";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -92,6 +93,10 @@ async function extractToken(text) {
   return tokenMatch ? tokenMatch[0] : null;
 }
 
+async function activeUser(inactiveUser) {
+  return await activantion.activateUserById(inactiveUser.id);
+}
+
 const orch = {
   waitForAllServices,
   claerDatabase,
@@ -101,6 +106,7 @@ const orch = {
   deleteAllEmail,
   getLastEmail,
   extractToken,
+  activeUser,
 };
 
 export default orch;

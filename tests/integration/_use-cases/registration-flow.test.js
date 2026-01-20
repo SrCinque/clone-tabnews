@@ -12,6 +12,7 @@ beforeAll(async () => {
 describe("Use case: Registration Flow(all seccessful)", () => {
   let createUserResponseBody;
   let activantionTokenId;
+  let createSessionResponseBody;
   test("Create user account", async () => {
     const createUserResponse = await fetch(
       "http://localhost:3000/api/v1/users",
@@ -69,11 +70,15 @@ describe("Use case: Registration Flow(all seccessful)", () => {
     expect(Date.parse(responseBody.used_at)).not.toBeNaN();
 
     const activatedUser = await user.findOneByUsername("filipecinque");
-    expect(activatedUser.features).toEqual(["create:session"]);
+    expect(activatedUser.features).toEqual([
+      "create:session",
+      "read:session",
+      "update:user",
+    ]);
   });
 
   test("login", async () => {
-    const response = await fetch("http://localhost:3000/api/v1/login", {
+    const response = await fetch("http://localhost:3000/api/v1/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -81,12 +86,23 @@ describe("Use case: Registration Flow(all seccessful)", () => {
         password: "senha123",
       }),
     });
+    expect(response.status).toBe(201);
+
+    createSessionResponseBody = await response.json();
+    expect(createSessionResponseBody.user_id).toEqual(
+      createUserResponseBody.id,
+    );
+  });
+
+  test("Get user activation", async () => {
+    const response = await fetch("http://localhost:3000/api/v1/user", {
+      headers: {
+        Cookie: `session_id=${createSessionResponseBody.token}`,
+      },
+    });
     expect(response.status).toBe(200);
 
     const responseBody = await response.json();
-    console.log(responseBody);
     expect(responseBody.id).toEqual(createUserResponseBody.id);
   });
-
-  test("Get user activation", async () => {});
 });
