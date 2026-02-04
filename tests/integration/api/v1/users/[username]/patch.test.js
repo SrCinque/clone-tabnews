@@ -37,7 +37,7 @@ describe("PATCH to api/v1/users/[username]", () => {
   });
 
   describe("Default user", () => {
-    test.only("with nonexistent username", async () => {
+    test("with nonexistent username", async () => {
       const createdUser = await orchestrator.createUser({});
 
       const activatedUser = await orchestrator.activeUser(createdUser);
@@ -54,7 +54,6 @@ describe("PATCH to api/v1/users/[username]", () => {
       );
       expect(response.status).toBe(404);
       const responseBody = await response.json();
-      console.log(responseBody);
       expect(responseBody).toEqual({
         name: "NotFoundError",
         message: "Usuário não encontrado",
@@ -63,7 +62,7 @@ describe("PATCH to api/v1/users/[username]", () => {
       });
     });
 
-    test.only("with duplicated 'username'", async () => {
+    test("with duplicated 'username'", async () => {
       await orchestrator.createUser({
         username: "user1",
       });
@@ -96,7 +95,41 @@ describe("PATCH to api/v1/users/[username]", () => {
       });
     });
 
-    test.only("with duplicated 'email'", async () => {
+    test("with user `user2` target `userA`", async () => {
+      await orchestrator.createUser({
+        username: "userA",
+      });
+
+      const createdUser2 = await orchestrator.createUser({
+        username: "userB",
+      });
+
+      const activatedUser = await orchestrator.activeUser(createdUser2);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
+
+      const response = await fetch("http://localhost:3000/api/v1/users/userA", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          username: "userB",
+        }),
+      });
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+      expect(responseBody).toEqual({
+        action:
+          "Verifique se você possui a feature para atualizar outros usuários",
+        message: "Você não possui permissão para outro usuário",
+        name: "ForbiddenError",
+        status_code: 403,
+      });
+    });
+
+    test("with duplicated 'email'", async () => {
       await orchestrator.createUser({
         email: "emailUser1@gmail.com",
       });
@@ -132,7 +165,7 @@ describe("PATCH to api/v1/users/[username]", () => {
       });
     });
 
-    test.only("with unique 'username'", async () => {
+    test("with unique 'username'", async () => {
       const createdUser1 = await orchestrator.createUser({});
       const activatedUser = await orchestrator.activeUser(createdUser1);
       const sessionObject = await orchestrator.createSession(activatedUser.id);
@@ -170,7 +203,7 @@ describe("PATCH to api/v1/users/[username]", () => {
       expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
 
-    test.only("with unique 'email'", async () => {
+    test("with unique 'email'", async () => {
       const createdUserEmail = await orchestrator.createUser({});
       const activatedUser = await orchestrator.activeUser(createdUserEmail);
       const sessionObject = await orchestrator.createSession(activatedUser.id);
@@ -208,7 +241,7 @@ describe("PATCH to api/v1/users/[username]", () => {
       expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
 
-    test.only("with new 'password'", async () => {
+    test("with new 'password'", async () => {
       const createdUserPassword = await orchestrator.createUser({});
       const activatedUser = await orchestrator.activeUser(createdUserPassword);
       const sessionObject = await orchestrator.createSession(activatedUser.id);
