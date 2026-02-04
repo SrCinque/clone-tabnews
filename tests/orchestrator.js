@@ -97,6 +97,11 @@ async function activeUser(inactiveUser) {
   return await activantion.activateUserById(inactiveUser.id);
 }
 
+async function addFeatureToUser(userObject, features) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
+}
+
 const orch = {
   waitForAllServices,
   claerDatabase,
@@ -107,6 +112,7 @@ const orch = {
   getLastEmail,
   extractToken,
   activeUser,
+  addFeatureToUser,
 };
 
 export default orch;

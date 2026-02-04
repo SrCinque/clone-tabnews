@@ -7,7 +7,8 @@ function can(user, feature, resource) {
 
   if (feature === "update:user" && resource) {
     authorized = false;
-    if (user.id === resource.id) {
+    //console.log(user);
+    if (user.id === resource.id || can(user, "update:user:others")) {
       authorized = true;
     }
   }
