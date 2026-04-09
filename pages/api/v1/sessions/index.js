@@ -25,7 +25,6 @@ async function postHandler(request, response) {
     authenticatedUser,
     "create:session",
   );
-  console.log(authorized);
 
   if (authorized === false) {
     throw new ForbiddenError({
@@ -37,7 +36,12 @@ async function postHandler(request, response) {
   const newSession = await session.create(authenticatedUser.id);
 
   controller.setSessionCookie(newSession.token, response);
+  const secureOutputValue = authorization.filterOutput(
+    authenticatedUser,
+    "read:session",
+    newSession,
+  );
 
-  return response.status(201).json(newSession);
+  return response.status(201).json(secureOutputValue);
 }
 6;
